@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-k8s-service
+  namespace: default
+  labels:
+    app: rag-k8s
+spec:
+  selector:
+    app: rag-k8s
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+  type: NodePort
