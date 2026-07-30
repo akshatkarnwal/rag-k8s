@@ -3,11 +3,19 @@
 Production RAG pipeline deployed on Kubernetes — FastAPI + pgvector + Gemini + Prometheus + Grafana.
 
 ## Architecture
-User Query → FastAPI → LangChain → pgvector (semantic search) → Gemini → Response
-↓
-Prometheus /metrics
-↓
-Grafana Dashboard
+
+```mermaid
+flowchart LR
+    A[User Query] --> B[FastAPI]
+    B --> C[LangChain]
+    C --> D["pgvector<br/>Semantic Search"]
+    D --> E[Gemini]
+    E --> F[Response]
+
+    B --> G["/metrics"]
+    G --> H[Prometheus]
+    H --> I[Grafana Dashboard]
+```
 
 ## Stack
 
