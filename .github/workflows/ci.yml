@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   test:
@@ -17,9 +17,6 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
-          # Reads your .python-version automatically, but pinning here
-          # too makes the workflow self-documenting and independent of
-          # that file ever changing silently
           python-version: "3.14"
 
       - name: Install dependencies (from uv.lock, dev deps included)
