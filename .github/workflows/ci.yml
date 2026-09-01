@@ -24,3 +24,7 @@ jobs:
 
       - name: Run tests
         run: uv run pytest -v
+        env:
+          JWT_SECRET_KEY: test-secret-key-not-for-production
+          DEMO_USERNAME: testuser
+          DEMO_PASSWORD_HASH: "$2b$12$x2v0NENKwzOqUQW6TYh/7.MTpbsjYwhB1aozQrAVjsZV80cJitXjS"
