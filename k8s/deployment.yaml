@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: rag-k8s
-          image: rag-k8s:latest
+          image: rag-k8s-rag-api:latest
           imagePullPolicy: Never        # use local minikube image
           ports:
             - containerPort: 8000
@@ -29,6 +29,21 @@ spec:
             - configMapRef:
                 name: rag-k8s-config
           env:
+            - name: DEMO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rag-k8s-secret
+                  key: DEMO_USERNAME
+            - name: DEMO_PASSWORD_HASH
+              valueFrom:
+                secretKeyRef:
+                  name: rag-k8s-secret
+                  key: DEMO_PASSWORD_HASH
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: rag-k8s-secret
+                  key: JWT_SECRET_KEY
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
