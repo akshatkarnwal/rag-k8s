@@ -21,8 +21,8 @@ flowchart LR
 
 ## Stack
 
-|     Component    |                          Technology                                      |
-|------------------|--------------------------------------------------------------------------|  
+|     Component    |           Technology                                                     |
+|------------------|--------------------------------------------------------------------------|
 | API              | FastAPI + Uvicorn                                                        |
 | RAG Framework    | LangChain                                                                |
 | Vector DB        | pgvector (PostgreSQL)                                                    |
@@ -129,12 +129,12 @@ JWT issuance/verification mechanics stay the same either way.
 
 Required environment variables (see `.env.example`):
 
-|      Variable        |                  Purpose                    |
-|-----------------------|----------------------------------------------|
+|      Variable         |                  Purpose                                      |
+|-----------------------|---------------------------------------------------------------|
 | `JWT_SECRET_KEY`      | Signing key for tokens — generate with `openssl rand -hex 32` |
-| `JWT_EXPIRE_MINUTES`  | Token lifetime (default: 60)                  |
-| `DEMO_USERNAME`       | The single demo user's username               |
-| `DEMO_PASSWORD_HASH`  | Bcrypt hash of the demo password — never store plaintext |
+| `JWT_EXPIRE_MINUTES`  | Token lifetime (default: 60)                                  |
+| `DEMO_USERNAME`       | The single demo user's username                               |
+| `DEMO_PASSWORD_HASH`  | Bcrypt hash of the demo password — never store plaintext      |
 
 Generate a `DEMO_PASSWORD_HASH` with:
 ```bash

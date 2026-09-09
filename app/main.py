@@ -1,6 +1,6 @@
 import time
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.responses import Response
 from pydantic import BaseModel
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
@@ -8,6 +8,10 @@ from app.rag import build_rag_chain
 from app.ingest import ingest_documents
 from app.metrics import QUERY_COUNT, QUERY_LATENCY, CHUNKS_RETRIEVED
 from app.config import settings
+from fastapi.security import OAuth2PasswordRequestForm
+from app.auth import verify_demo_user, create_access_token, get_current_user
+ 
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -42,8 +46,15 @@ def root():
 def health():
     return {"status": "ok", "collection": settings.collection_name}
 
+@app.post("/token")
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    if not verify_demo_user(form_data.username, form_data.password):
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
+    token = create_access_token(form_data.username)
+    return {"access_token": token, "token_type": "bearer"}
+
 @app.post("/query", response_model=QueryResponse)
-def query(request: QueryRequest, req: Request):
+def query(request: QueryRequest, req: Request, current_user: str = Depends(get_current_user)):
     if not request.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
 
