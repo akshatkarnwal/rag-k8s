@@ -1,0 +1,2 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+POST,/query,HTTPError('500 Server Error: Internal Server Error for url: /query'),9,2026-09-06T06:35:53Z,2026-09-06T06:35:57Z
