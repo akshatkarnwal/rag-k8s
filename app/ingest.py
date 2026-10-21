@@ -60,3 +60,5 @@ def ingest_sample_data() -> int:
     DOCS_INDEXED.set(len(docs))
     print(f"Ingested {len(docs)} sample chunks")
     return len(docs)
+
+if __name__ == "__main__": ingest_documents()

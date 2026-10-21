@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rag-k8s-ingest
+  namespace: default
+  labels:
+    app: rag-k8s-ingest
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: rag-k8s-ingest
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ingest
+          image: rag-k8s-rag-api:IMAGE_TAG     # replaced by deploy.sh
+          imagePullPolicy: Never
+          # Project uses uv. --no-sync runs in the environment already baked
+          # into the image instead of trying to install packages at pod start.
+          # Assumes the image workdir holds app/ and data/.
+          command: ["uv", "run", "--no-sync", "python", "-m", "app.ingest"]
+          envFrom:
+            - configMapRef:
+                name: rag-k8s-config
+          env:
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: rag-k8s-secret
+                  key: GEMINI_API_KEY
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rag-k8s-secret
+                  key: DB_PASSWORD
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

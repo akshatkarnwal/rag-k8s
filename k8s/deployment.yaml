@@ -6,7 +6,8 @@ metadata:
   labels:
     app: rag-k8s
 spec:
-  replicas: 2
+  # replicas is intentionally omitted: the HPA (hpa.yaml) owns the replica
+  # count. Setting it here would reset it on every `kubectl apply`.
   selector:
     matchLabels:
       app: rag-k8s
@@ -21,7 +22,9 @@ spec:
     spec:
       containers:
         - name: rag-k8s
-          image: rag-k8s-rag-api:latest
+          # IMAGE_TAG is replaced with the git short SHA by deploy.sh, so the
+          # running image always maps to a commit (no silent :latest drift).
+          image: rag-k8s-rag-api:IMAGE_TAG
           imagePullPolicy: Never        # use local minikube image
           ports:
             - containerPort: 8000
@@ -61,15 +64,25 @@ spec:
             limits:
               memory: "1Gi"
               cpu: "500m"
+          # Startup: uvicorn only accepts connections after the lifespan
+          # finishes, so this passes once the RAG chain is built. Up to 150s.
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 5
+            failureThreshold: 30
+          # Liveness: cheap, no dependencies, so a DB outage doesn't restart pods.
           livenessProbe:
             httpGet:
               path: /health
               port: 8000
-            initialDelaySeconds: 30
             periodSeconds: 10
+            failureThreshold: 3
+          # Readiness: chain built and Postgres reachable.
           readinessProbe:
             httpGet:
-              path: /health
+              path: /ready
               port: 8000
-            initialDelaySeconds: 15
             periodSeconds: 5
+            failureThreshold: 3

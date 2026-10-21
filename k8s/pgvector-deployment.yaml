@@ -17,6 +17,10 @@ metadata:
   namespace: default
 spec:
   replicas: 1
+  # Recreate: the old pod stops before the new one starts, so two Postgres
+  # processes never share the same ReadWriteOnce volume during an update.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: pgvector
@@ -48,6 +52,13 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
+          # Don't send traffic (or let API pods pass readiness) until Postgres accepts connections.
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "vectordb"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 6
       volumes:
         - name: pgdata
           persistentVolumeClaim:

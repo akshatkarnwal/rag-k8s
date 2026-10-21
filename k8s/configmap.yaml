@@ -8,3 +8,6 @@ data:
   DB_PORT: "5432"
   DB_NAME: "vectordb"
   DB_USER: "postgres"
+  # Pods must not re-embed the whole corpus on every start.
+  # Ingestion is a one-off: run ingest-job.yaml (deploy.sh --ingest).
+  INGEST_ON_STARTUP: "false"
