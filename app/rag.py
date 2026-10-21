@@ -2,7 +2,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmb
 from langchain_community.vectorstores import PGVector
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel, RunnableLambda
 from app.config import settings
 
 RAG_PROMPT = ChatPromptTemplate.from_messages([
@@ -19,7 +19,9 @@ Context:
 def get_llm():
     return ChatGoogleGenerativeAI(
         model = settings.llm_model,
-        google_api_key = settings.gemini_api_key
+        google_api_key = settings.gemini_api_key,
+        max_retries = 2,
+        timeout = 20
     )
 
 def get_embeddings():
@@ -49,13 +51,11 @@ def format_docs(docs):
 def build_rag_chain():
     retriever = get_retriever()
     llm = get_llm()
-    chain = (
-        {
-            "context" : retriever | format_docs,
-            "question" : RunnablePassthrough()
-        }
-        | RAG_PROMPT
-        | llm
-        | StrOutputParser()
+    answer = (
+        RunnableLambda(lambda x: {"context": format_docs(x["docs"]), "question": x["question"]})
+        | RAG_PROMPT | llm | StrOutputParser()
     )
-    return chain, retriever
+    return (
+        RunnableParallel(docs=retriever, question=RunnablePassthrough())
+        | RunnablePassthrough.assign(answer=answer)
+    )

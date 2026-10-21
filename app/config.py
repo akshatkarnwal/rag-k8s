@@ -4,6 +4,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    return os.environ.get(name, str(default)).strip().lower() in ("1", "true", "yes", "on")
+
+
 @dataclass
 class Settings:
 
@@ -26,6 +31,10 @@ class Settings:
     chunk_size : int = 500
     chunk_overlap : int = 100
     retrievel_k : int = 4
+
+    # Ingestion: off by default so pods don't re-embed everything on every start.
+    # Set INGEST_ON_STARTUP=true locally, or run `python -m app.ingest` / the ingest Job.
+    ingest_on_startup : bool = _env_bool("INGEST_ON_STARTUP", False)
 
     @property
     def connection_string(self) -> str:
