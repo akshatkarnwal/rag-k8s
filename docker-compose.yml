@@ -5,6 +5,10 @@ services:
       - "8000:8000"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - DEMO_USERNAME=${DEMO_USERNAME}
+      - DEMO_PASSWORD_HASH=${DEMO_PASSWORD_HASH}
+      - JWT_EXPIRE_MINUTES=${JWT_EXPIRE_MINUTES:-60}
       - DB_HOST=pgvector
       - DB_PORT=5432
       - DB_NAME=vectordb

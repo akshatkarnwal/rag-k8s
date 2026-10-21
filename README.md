@@ -288,7 +288,6 @@ Celery + Redis are wired up (`app/tasks.py`, `app/worker.py`) and verified worki
 ## What I Learned
 
 - End-to-end RAG pipeline architecture
-- pgvector HNSW index for approximate nearest neighbour search
 - Kubernetes Deployments, Services, ConfigMaps, Secrets, HPA
 - Prometheus ServiceMonitor for automatic target discovery
 - Production FastAPI patterns: lifespan, health probes, metrics endpoint
