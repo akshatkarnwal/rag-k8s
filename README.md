@@ -228,7 +228,7 @@ Postgres is on a PersistentVolume, so the data survives pod restarts. If every p
 The chain returns both the retrieved documents and the answer, so `/query` embeds the question once and reads the chunk count from the same result. The first version retrieved twice (once for the chunk count, once inside the chain), doubling embedding calls against a rate-limited API.
 
 **Why fail fast on Gemini rate limits?**
-The Gemini client is configured with `max_retries=2, timeout=20`, and a 429 maps to `503` with `Retry-After: 60`. The free tier's limit is per minute (see [Load Testing](#run-2--after-the-fixes)), and a few seconds of backoff can't outlast a window the API says to wait ~42s for, so more retries only hold a worker thread for nothing. Failed requests are also recorded in the latency histogram, so slow failures show up in P95.
+The Gemini client is configured with `max_retries=2, timeout=20`, and a 429 maps to `503` with `Retry-After: 60`. The 429 hit in the load test was the free tier's per-minute limit (see [Load Testing](#run-2--after-the-fixes)), and a few seconds of backoff can't outlast a window the API says to wait ~42s for, so more retries only hold a worker thread for nothing. Failed requests are also recorded in the latency histogram, so slow failures show up in P95.
 
 **Why `Recreate` for the Postgres Deployment?**
 The data volume is `ReadWriteOnce`. With the default rolling update, the new Postgres pod can start while the old one still has the volume mounted. `Recreate` stops the old pod first.
@@ -326,7 +326,7 @@ Changes made after run 1: `max_retries=2, timeout=20` on the Gemini client, 429 
 | `/token` | 3    | 0             | 1.7s – 2.6s   |
 
 - Server-side, 25 attempts were made: 6 succeeded and 19 were rejected with a Gemini 429 (Locust recorded 23 of them; the last two were still in flight at shutdown).
-- The 429 payload shows the limit that was hit: `GenerateRequestsPerMinutePerProject` — 5 requests per minute for `gemini-2.5-flash` on the free tier (as observed in October 2026; free-tier limits change), with a suggested retry in ~42s. So this is a per-minute limit, not a daily cap.
+- The 429 payload shows the limit that was hit: `GenerateRequestsPerMinutePerProject` — 5 requests per minute for `gemini-2.5-flash` on the free tier (as observed in October 2026; free-tier limits change), with a suggested retry in ~42s. So this particular 429 was the per-minute limit. The free tier also has a separate daily cap (20 requests per day per project for this model), so a long test session can run out of quota even when the per-minute limit isn't the cause.
 - The slowest `/query` of the whole run (3.9s) is now far below the 51–56s failures of run 1. Run 1 and run 2 differ in load (10 vs 3 users), so the comparison that matters is failure latency and status code, not failure rate.
 
 ### Runs 3–5 — autoscaling
